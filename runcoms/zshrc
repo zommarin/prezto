@@ -1,13 +1,183 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
+#@IgnoreInspection BashAddShebang
 
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
+
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.histfile
+HISTSIZE=1000
+SAVEHIST=1000
+setopt appendhistory autocd beep extendedglob nomatch notify
+bindkey -e
+# End of lines configured by zsh-newuser-install
+# The following lines were added by compinstall
+#zstyle :compinstall filename '/Users/uaz/.zshrc'
+
+#autoload -Uz compinit
+#compinit
+# End of lines added by compinstall
+
+# iTerm shell integration
+source ~/.iterm2_shell_integration.`basename $SHELL`
+
+# AZ Customizations
+autoload -Uz promptinit
+promptinit
+prompt steeef
+
+export PATH=~/bin:$PATH
+
+# Go support
+export PATH=$PATH:/usr/local/opt/go/libexec/bin
+export GOPATH=$HOME/go
+
+# iTerm2 Inetgration support
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+function ccd() {
+    mkdir "$1"
+    cd "$1"
+}
+
+alias ty=less
+
+export EDITOR='subl -w'
+s() {
+	subl -a "$@"
+}
+
+r() {
+	. ~/.zshrc
+	hash -r
+}
+
+alias bc=bcompare
+
+alias gs='git status --short'
+
+# Get completion for the mesos commands (mesos installed with pip)
+##source mesos-zsh-completion.sh
+
+# Autocompletion for AWS
+##source /usr/local/bin/aws_zsh_completer.sh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+#alias aws=~/Library/Python/2.7/bin/aws
+
+zset-aws-profile() {
+	export AWS_DEFAULT_PROFILE=$1
+	export AWS_PROFILE=$1
+}
+
+zset-aws-region() {
+	export AWS_DEFAULT_REGION=$1
+	export AWS_REGION=$1
+}
+
+# Clear screen and history (works in Terminal and iTerm)
+cls() {
+	printf "\33c\e[3J"
+}
+
+zedit-zshrc() {
+	s ~/.zshrc
+}
+
+zedit-ssh-config() {
+	s ~/.ssh/config
+}
+
+zcopy-ssh-public-key() {
+	cat ~/.ssh/id_rsa.pub | pbcopy
+}
+
+zmount-bb-nas-sshfs() {
+    sshfs -o reconnect -o volname=bb-nas-$1 nas.bitbouncer.services:/mnt/volume0/$1 /Volumes/bb-nas-$1
+}
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/uaz/tmp/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/uaz/tmp/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/uaz/tmp/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/uaz/tmp/google-cloud-sdk/completion.zsh.inc'; fi
+
+function zalert() {
+	echo $"\e]9;$*\007"
+}
+
+# Run tests with node.js
+function znode-run-tests() {
+	for f in "$@" ; do
+		cls
+		ECHO "### Runing tests in: $f"
+		DEBUG=* node $f || break
+	done
+}
+
+function ipmitool() {
+    /usr/local/Cellar/ipmitool/1.8.18_2/bin/ipmitool -U admin -P admin "$@"
+}
+
+function zset-git-private-identity() {
+    git config user.email "anders@zommarin.se"
+}
+
+# Kubernetes stuff
+alias kc=kubectl
+
+function zkube-context-ericsson-udn() {
+    export KUBECONFIG=~/.kube/ericsson-udn.yaml
+}
+function zkube-context-anzo() {
+    export KUBECONFIG=~/.kube/anzo.yaml
+}
+function zkube-context-bitbouncer() {
+    export KUBECONFIG=~/.kube/bitbouncer.yaml
+}
+function zkube-context-neti-asus() {
+    export KUBECONFIG=~/.kube/neti-asus.yaml
+}
+function zkube-context-vagrant() {
+    export KUBECONFIG=~/.kube/vagrant.yaml
+}
+function zkube-context-minikube() {
+    export KUBECONFIG=~/.kube/minikube.yaml
+}
+function zkube-context-neti-vm() {
+    export KUBECONFIG=~/.kube/neti-vm.yaml
+}
+
+function zkube-context-qcc() {
+    export KUBECONFIG=~/.kube/QCC.yaml
+    export PATH=~/NetInsight/QCC/bin:$PATH
+}
+
+function zkube-dashboard() {
+    open http://localhost:${1:-8001}/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+}
+
+# Helm support
+source <(helm completion zsh)
+
+# iTerm2 title Support
+function set_iterm_name() {
+  mode=$1; shift
+  echo -ne "\033]$mode;$@\007"
+}
+# Z Name Both (Tab and Window)
+function z-set-name-both () { set_iterm_name 0 $@; }
+# Z Name tab
+function z-set-name-tab () { set_iterm_name 1 $@; }
+# Z Name Window
+function z-set-name-window () { set_iterm_name 2 $@; }
+
+# https://github.com/nexdrew/rekcod
+function rekcod() {
+    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod "$@"
+}
