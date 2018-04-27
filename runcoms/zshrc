@@ -134,23 +134,23 @@ alias kc=kubectl
 function zkube-context-ericsson-udn() {
     export KUBECONFIG=~/.kube/ericsson-udn.yaml
 }
+function zkube-context-ericsson-paris() {
+    export KUBECONFIG=~/.kube/ericsson-paris.yaml
+}
 function zkube-context-anzo() {
     export KUBECONFIG=~/.kube/anzo.yaml
 }
 function zkube-context-bitbouncer() {
     export KUBECONFIG=~/.kube/bitbouncer.yaml
 }
-function zkube-context-neti-asus() {
-    export KUBECONFIG=~/.kube/neti-asus.yaml
+function zkube-context-neti() {
+    export KUBECONFIG=~/.kube/neti.yaml
 }
 function zkube-context-vagrant() {
     export KUBECONFIG=~/.kube/vagrant.yaml
 }
 function zkube-context-minikube() {
     export KUBECONFIG=~/.kube/minikube.yaml
-}
-function zkube-context-neti-vm() {
-    export KUBECONFIG=~/.kube/neti-vm.yaml
 }
 
 function zkube-context-qcc() {
