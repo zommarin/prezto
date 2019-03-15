@@ -5,6 +5,8 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
+export GREP_COLOR='0;32'
+export GREP_COLORS="mt=$GREP_COLOR"
 
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
@@ -20,9 +22,6 @@ bindkey -e
 #compinit
 # End of lines added by compinstall
 
-# iTerm shell integration
-source ~/.iterm2_shell_integration.`basename $SHELL`
-
 # AZ Customizations
 autoload -Uz promptinit
 promptinit
@@ -34,6 +33,9 @@ export PATH=~/bin:$PATH
 export PATH=$PATH:/usr/local/opt/go/libexec/bin
 export GOPATH=$HOME/go
 
+# Groovy support (from brew)
+export GROOVY_HOME=/usr/local/opt/groovy/libexec
+
 # iTerm2 Inetgration support
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
@@ -42,6 +44,10 @@ function ccd() {
     cd "$1"
 }
 
+export LESSOPEN="| /usr/local/bin/src-hilite-lesspipe.sh %s"
+export LESS=" -R "
+alias less='less -m -g -i --underline-special --SILENT'
+alias more='less'
 alias ty=less
 
 export EDITOR='subl -w'
@@ -54,6 +60,8 @@ r() {
 	hash -r
 }
 
+alias ws=webstorm
+
 alias bc=bcompare
 
 alias gs='git status --short'
@@ -62,11 +70,7 @@ alias gs='git status --short'
 ##source mesos-zsh-completion.sh
 
 # Autocompletion for AWS
-##source /usr/local/bin/aws_zsh_completer.sh
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+source /usr/local/bin/aws_zsh_completer.sh
 
 #alias aws=~/Library/Python/2.7/bin/aws
 
@@ -101,12 +105,6 @@ zmount-bb-nas-sshfs() {
     sshfs -o reconnect -o volname=bb-nas-$1 nas.bitbouncer.services:/mnt/volume0/$1 /Volumes/bb-nas-$1
 }
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/uaz/tmp/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/uaz/tmp/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/uaz/tmp/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/uaz/tmp/google-cloud-sdk/completion.zsh.inc'; fi
-
 function zalert() {
 	echo $"\e]9;$*\007"
 }
@@ -124,42 +122,67 @@ function ipmitool() {
     /usr/local/Cellar/ipmitool/1.8.18_2/bin/ipmitool -U admin -P admin "$@"
 }
 
-function zset-git-private-identity() {
+function zgi() {
+    echo "Git identity is: $(git config user.name) <$(git config user.email)>"
+}
+
+function zgz() {
+    git config user.name "Anders Zommarin"
     git config user.email "anders@zommarin.se"
+    zgi
+}
+
+function zgn() {
+    git config user.name "Anders Zommarin"
+    git config user.email "anders.zommarin@netinsight.net"
+    zgi
+}
+
+# Setup node development for NetInsight
+function znn() {
+    zgn
+    echo 'registry=http://npm-registry.neti.systems' > .npmrc
+    echo 'Wrote NPM registry config to .npmrc'
 }
 
 # Kubernetes stuff
-alias kc=kubectl
+#alias k='kubectl "--context=${KUBECTL_CONTEXT:-$(kubectl config current-context)}" ${KUBECTL_NAMESPACE/[[:alnum:]-]*/--namespace=${KUBECTL_NAMESPACE}}'
+alias k=kubectl
 
-function zkube-context-ericsson-udn() {
-    export KUBECONFIG=~/.kube/ericsson-udn.yaml
-}
-function zkube-context-ericsson-paris() {
-    export KUBECONFIG=~/.kube/ericsson-paris.yaml
-}
-function zkube-context-anzo() {
-    export KUBECONFIG=~/.kube/anzo.yaml
-}
-function zkube-context-bitbouncer() {
-    export KUBECONFIG=~/.kube/bitbouncer.yaml
-}
-function zkube-context-neti() {
-    export KUBECONFIG=~/.kube/neti.yaml
-}
-function zkube-context-vagrant() {
-    export KUBECONFIG=~/.kube/vagrant.yaml
-}
-function zkube-context-minikube() {
-    export KUBECONFIG=~/.kube/minikube.yaml
+# kubectl context
+function zkc() {
+    if [ ! "$1" ] ; then
+        echo "Context: ${KUBECTL_CONTEXT:-$(kubectl config current-context)}, Namespace: ${KUBECTL_NAMESPACE:-default}"
+        return
+    fi
+    local configFile="$HOME/.kube/${1}.yaml"
+    if [ ! -f ${configFile} ] ; then
+        echo "The config does not exist: ${configFile}"
+        return
+    fi
+    export KUBECONFIG=~/.kube/${1}.yaml
+    export PATH=~/.kube/${1}/bin:$(echo $PATH | sed "s|~/\.kube/[a-zA-Z0-9_-]*/bin:||g")
+    hash -r
 }
 
-function zkube-context-qcc() {
-    export KUBECONFIG=~/.kube/QCC.yaml
-    export PATH=~/NetInsight/QCC/bin:$PATH
-}
-
-function zkube-dashboard() {
+# Open kubernetes dashboard
+function zkd() {
     open http://localhost:${1:-8001}/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+}
+
+function zkube-configure-namespace() {
+    kubectl config set-context $(kubectl config current-context) --namespace=$1
+}
+
+# Set namespaceaws
+function zkn() {
+    export KUBECTL_NAMESPACE=$1
+    echo "Namespace set to $1"
+}
+
+# Watch on stuff in current namespace
+function zkw() {
+    watch kubectl "--context=${KUBECTL_CONTEXT:-$(kubectl config current-context)}" ${KUBECTL_NAMESPACE/[[:alnum:]-]*/--namespace=${KUBECTL_NAMESPACE}} get all,pvc -o wide
 }
 
 # Helm support
@@ -178,6 +201,47 @@ function z-set-name-tab () { set_iterm_name 1 $@; }
 function z-set-name-window () { set_iterm_name 2 $@; }
 
 # https://github.com/nexdrew/rekcod
+# Reverse engineer docker run commands
 function rekcod() {
     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod "$@"
 }
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/uaz/lib/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/uaz/lib/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/uaz/lib/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/uaz/lib/google-cloud-sdk/completion.zsh.inc'; fi
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# START: fzf
+
+# Use ~~ as the trigger sequence instead of the default **
+export FZF_COMPLETION_TRIGGER='~~'
+
+# Options to fzf command
+export FZF_COMPLETION_OPTS='+c -x'
+
+# Use fd (https://github.com/sharkdp/fd) instead of the default find
+# command for listing path candidates.
+# - The first argument to the function ($1) is the base path to start traversal
+# - See the source code (completion.{bash,zsh}) for the details.
+_fzf_compgen_path() {
+  fd --hidden --follow --exclude ".git" . "$1"
+}
+
+# Use fd to generate the list for directory completion
+_fzf_compgen_dir() {
+  fd --type d --hidden --follow --exclude ".git" . "$1"
+}
+
+# END: fzf
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# kubectl krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+# Autocomp
