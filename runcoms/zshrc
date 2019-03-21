@@ -245,3 +245,6 @@ _fzf_compgen_dir() {
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 # Autocomp
+
+# === GO Language ===
+export GO111MODULE=on
