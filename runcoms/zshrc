@@ -10,8 +10,8 @@ export GREP_COLORS="mt=$GREP_COLOR"
 
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
-HISTSIZE=1000
-SAVEHIST=1000
+HISTSIZE=10000
+SAVEHIST=10000
 setopt appendhistory autocd beep extendedglob nomatch notify
 bindkey -e
 # End of lines configured by zsh-newuser-install
@@ -145,8 +145,9 @@ function znn() {
     echo 'Wrote NPM registry config to .npmrc'
 }
 
+# === kubectl - Kubernetes CLI ===
+
 # Kubernetes stuff
-#alias k='kubectl "--context=${KUBECTL_CONTEXT:-$(kubectl config current-context)}" ${KUBECTL_NAMESPACE/[[:alnum:]-]*/--namespace=${KUBECTL_NAMESPACE}}'
 alias k=kubectl
 
 # kubectl context
@@ -216,7 +217,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# START: fzf
+# === fzf - Fuzzy shell history search ===
 
 # Use ~~ as the trigger sequence instead of the default **
 export FZF_COMPLETION_TRIGGER='~~'
@@ -237,14 +238,10 @@ _fzf_compgen_dir() {
   fd --type d --hidden --follow --exclude ".git" . "$1"
 }
 
-# END: fzf
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# kubectl krew
+# === kubectl krew - Package manager for kubectl ===
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
-# Autocomp
 
 # === GO Language ===
 export GO111MODULE=on
